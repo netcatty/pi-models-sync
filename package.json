@@ -1,0 +1,44 @@
+{
+  "name": "pi-models-sync",
+  "version": "1.0.0",
+  "description": "把 models.json 热同步进 pi 会话：/reload 不重读模型配置，且内置 provider 会叠加远程模型",
+  "type": "module",
+  "keywords": [
+    "pi-package",
+    "pi",
+    "models",
+    "hot-reload",
+    "provider",
+    "models.json"
+  ],
+  "license": "MIT",
+  "author": "netcatty",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/netcatty/pi-models-sync.git"
+  },
+  "homepage": "https://github.com/netcatty/pi-models-sync#readme",
+  "bugs": {
+    "url": "https://github.com/netcatty/pi-models-sync/issues"
+  },
+  "files": [
+    "extensions",
+    "README.md",
+    "LICENSE"
+  ],
+  "pi": {
+    "extensions": [
+      "./extensions/models-sync/index.ts"
+    ]
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}
