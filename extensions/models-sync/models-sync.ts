@@ -124,7 +124,20 @@ export default function (pi: ExtensionAPI) {
   }
 
   function registerFromFile(): { count: number; errors: string[] } {
-    const { providers } = readModelsFile();
+    let providers: Record<string, ProviderConfig>;
+    try {
+      providers = readModelsFile().providers;
+    } catch (error) {
+      // 读不了/解析不了时保持现状：既不注册也不注销，宁可留着上一次的有效配置，
+      // 也不能因为手写 JSON 少个逗号就把当前会话的模型清空。
+      // 这里必须吞掉异常：工厂阶段抛错会让 pi 直接判定扩展加载失败，
+      // watch / session_start / 命令全部不再生效。
+      const message = error instanceof Error ? error.message : String(error);
+      return {
+        count: managedIds.size,
+        errors: [`models.json 读取失败，已保留当前配置: ${message.slice(0, 200)}`],
+      };
+    }
     const nextIds = new Set(Object.keys(providers));
     const errors: string[] = [];
 
@@ -198,9 +211,10 @@ export default function (pi: ExtensionAPI) {
     });
   }
 
-  // 工厂阶段先注册一次，保证 pi --list-models 和新会话启动时就按文件覆盖内置目录
-  const boot = registerFromFile();
-  console.log(`models-sync 扩展已加载，覆盖 ${boot.count} 个服务商`);
+  // 工厂阶段先注册一次，保证 pi --list-models 和新会话启动时就按文件覆盖内置目录。
+  // 不要在这里 console.log：pi 的扩展工厂每次加载资源都会重新执行（模块有缓存，工厂没有），
+  // pi-web 的 /api/models 路由、每个新会话、每个 subagent 都会各触发一次，会持续刷屏。
+  registerFromFile();
 
   pi.registerCommand("sync-models", {
     description: "Reload models.json into the current Pi session",
